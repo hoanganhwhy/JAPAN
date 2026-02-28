@@ -3,6 +3,7 @@ import {BookOpen, FileText, CheckCircle, Brain, Shuffle, CreditCard, Headphones,
 import VocabQuizMode from '@/components/minna/VocabQuizMode'
 import VocabMatchMode from '@/components/minna/VocabMatchMode'
 import VocabFlashcardMode from '@/components/minna/VocabFlashcardMode'
+import RenshuuMode from '@/components/minna/RenshuuMode'
 
 // Fixed lesson data với dữ liệu thật
 const LESSONS_DATA = [
@@ -519,18 +520,7 @@ export default function MinnaPage() {
 
                 {/* Renshuu Section */}
                 {activeSection === 'renshuu' && (
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <h3 className="text-xl font-bold text-[#765534] mb-6">Bài Tập Renshuu</h3>
-                    <div className="text-center py-12">
-                      <div className="text-6xl mb-4">📝</div>
-                      <p className="text-gray-600 text-lg mb-6">
-                        Bài tập luyện tập kèm đáp án cho {currentLesson.title}
-                      </p>
-                      <button className="bg-[#FEC900] text-[#765534] px-8 py-3 rounded-full font-semibold hover:bg-[#FEE173] transition-colors">
-                        Bắt Đầu Làm Bài
-                      </button>
-                    </div>
-                  </div>
+                  <RenshuuMode lessonId={currentLesson.id} lessonTitle={currentLesson.title} />
                 )}
               </div>
             ) : (

@@ -90,13 +90,13 @@ export default function VocabFlashcardMode({ vocabulary, onBack, lessonTitle }: 
           </div>
 
           {/* Flashcard */}
-          <div 
+          <div
             onClick={() => setIsFlipped(!isFlipped)}
             className="relative w-full aspect-[3/2] mb-8 cursor-pointer"
             style={{ perspective: '1000px' }}
           >
             <div
-              className={`relative w-full h-full transition-transform duration-500`}
+              className="relative w-full h-full transition-transform duration-500"
               style={{
                 transformStyle: 'preserve-3d',
                 transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
@@ -104,7 +104,7 @@ export default function VocabFlashcardMode({ vocabulary, onBack, lessonTitle }: 
             >
               {/* Front */}
               <div
-                className="absolute w-full h-full bg-gradient-to-br from-[#FEC900] to-[#FEE173] rounded-2xl shadow-xl flex flex-col items-center justify-center p-8"
+                className="absolute w-full h-full bg-gradient-to-br from-[#FEE173] to-[#FEC900] rounded-2xl shadow-xl flex flex-col items-center justify-center p-8"
                 style={{ backfaceVisibility: 'hidden' }}
               >
                 <div className="text-6xl md:text-7xl font-bold text-[#765534] mb-4">
@@ -122,31 +122,27 @@ export default function VocabFlashcardMode({ vocabulary, onBack, lessonTitle }: 
                 >
                   <Volume2 size={24} />
                 </button>
-                <div className="mt-6 text-sm text-gray-600">
-                  Nhấp để xem nghĩa
-                </div>
+                <p className="mt-6 text-sm text-gray-600">Nhấn để xem nghĩa</p>
               </div>
 
               {/* Back */}
               <div
-                className="absolute w-full h-full bg-gradient-to-br from-[#765534] to-[#947454] rounded-2xl shadow-xl flex flex-col items-center justify-center p-8"
+                className="absolute w-full h-full bg-gradient-to-br from-[#FEC900] to-[#FEE173] rounded-2xl shadow-xl flex flex-col items-center justify-center p-8"
                 style={{
                   backfaceVisibility: 'hidden',
                   transform: 'rotateY(180deg)'
                 }}
               >
-                <div className="text-4xl font-bold text-white mb-4">
+                <div className="text-5xl font-bold text-[#765534] mb-4">
                   {currentWord.meaning}
                 </div>
-                <div className="text-xl text-[#FEE173] mb-4">
+                <div className="text-xl text-gray-700 mb-2">
                   Romaji: {currentWord.romaji}
                 </div>
-                <div className="text-2xl text-gray-200 mt-4">
+                <div className="text-3xl font-bold text-gray-600 mt-4">
                   {currentWord.kanji}
                 </div>
-                <div className="mt-6 text-sm text-gray-300">
-                  Nhấp để quay lại
-                </div>
+                <p className="mt-6 text-sm text-gray-600">Nhấn để lật lại</p>
               </div>
             </div>
           </div>
@@ -159,7 +155,7 @@ export default function VocabFlashcardMode({ vocabulary, onBack, lessonTitle }: 
               className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-colors ${
                 currentIndex === 0
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#FEC900] text-[#765534] hover:bg-[#FEE173]'
+                  : 'bg-[#FEE173] text-[#765534] hover:bg-[#FEC900]'
               }`}
             >
               <ChevronLeft size={20} />
@@ -176,7 +172,7 @@ export default function VocabFlashcardMode({ vocabulary, onBack, lessonTitle }: 
               className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-colors ${
                 currentIndex === shuffledVocab.length - 1
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#FEC900] text-[#765534] hover:bg-[#FEE173]'
+                  : 'bg-[#FEE173] text-[#765534] hover:bg-[#FEC900]'
               }`}
             >
               Sau
