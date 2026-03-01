@@ -1,33 +1,28 @@
 import React, { useState } from 'react'
-import {Star, Trash2, BookOpen, Edit, Headphones} from 'lucide-react'
+import { Star, Trash2, BookOpen, Edit, Headphones } from 'lucide-react'
+import { useFavorites } from '@/hooks/useFavorites'
 
 export default function FavoritesPage() {
   const [activeTab, setActiveTab] = useState<'vocabulary' | 'kanji'>('vocabulary')
+  const { favVocab, favKanji, removeVocab, removeKanji } = useFavorites()
 
-  const favoriteVocabulary = [
-    { japanese: 'がくせい', hiragana: 'がくせい', kanji: '学生', meaning: 'sinh viên', romaji: 'gakusei', category: 'Minna Bài 1' },
-    { japanese: 'せんせい', hiragana: 'せんせい', kanji: '先生', meaning: 'giáo viên', romaji: 'sensei', category: 'Minna Bài 1' },
-    { japanese: 'ほん', hiragana: 'ほん', kanji: '本', meaning: 'sách', romaji: 'hon', category: 'Minna Bài 2' },
-    { japanese: 'えんぴつ', hiragana: 'えんぴつ', kanji: '鉛筆', meaning: 'bút chì', romaji: 'enpitsu', category: 'Minna Bài 2' }
-  ]
-
-  const favoriteKanji = [
-    { kanji: '日', reading: 'ニチ、ジツ、ひ', meaning: 'Mặt trời, ngày', example: '日本 (にほん)' },
-    { kanji: '本', reading: 'ホン、もと', meaning: 'Sách, gốc', example: '本 (ほん)' },
-    { kanji: '人', reading: 'ジン、ニン、ひと', meaning: 'Người', example: '人 (ひと)' }
-  ]
+  const speakWord = (text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+      const u = new SpeechSynthesisUtterance(text)
+      u.lang = 'ja-JP'; u.rate = 0.8
+      window.speechSynthesis.speak(u)
+    }
+  }
 
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
+
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#765534] mb-4">
-            Từ Yêu Thích
-          </h1>
-          <p className="text-lg text-gray-600">
-            Lưu và ôn tập các từ vựng, Kanji quan trọng
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#765534] mb-4">Từ Yêu Thích</h1>
+          <p className="text-lg text-gray-600">Lưu và ôn tập các từ vựng, Kanji quan trọng</p>
         </div>
 
         {/* Tabs */}
@@ -36,32 +31,28 @@ export default function FavoritesPage() {
             <button
               onClick={() => setActiveTab('vocabulary')}
               className={`flex items-center space-x-2 px-8 py-3 rounded-full font-semibold transition-colors ${
-                activeTab === 'vocabulary'
-                  ? 'bg-[#FEC900] text-[#765534]'
-                  : 'text-gray-600 hover:text-[#765534]'
+                activeTab === 'vocabulary' ? 'bg-[#FEC900] text-[#765534]' : 'text-gray-600 hover:text-[#765534]'
               }`}
             >
               <BookOpen size={20} />
-              <span>Từ Vựng ({favoriteVocabulary.length})</span>
+              <span>Từ Vựng ({favVocab.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('kanji')}
               className={`flex items-center space-x-2 px-8 py-3 rounded-full font-semibold transition-colors ${
-                activeTab === 'kanji'
-                  ? 'bg-[#FEC900] text-[#765534]'
-                  : 'text-gray-600 hover:text-[#765534]'
+                activeTab === 'kanji' ? 'bg-[#FEC900] text-[#765534]' : 'text-gray-600 hover:text-[#765534]'
               }`}
             >
               <Edit size={20} />
-              <span>Kanji ({favoriteKanji.length})</span>
+              <span>Kanji ({favKanji.length})</span>
             </button>
           </div>
         </div>
 
-        {/* Vocabulary Tab */}
+        {/* ── Vocabulary Tab ── */}
         {activeTab === 'vocabulary' && (
           <div className="space-y-6">
-            {favoriteVocabulary.length > 0 ? (
+            {favVocab.length > 0 ? (
               <>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-[#765534]">Danh Sách Từ Vựng</h2>
@@ -71,14 +62,17 @@ export default function FavoritesPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {favoriteVocabulary.map((vocab, index) => (
-                    <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                  {favVocab.map((vocab) => (
+                    <div key={vocab.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
                             <span className="text-2xl font-bold text-[#765534]">{vocab.kanji}</span>
                             <span className="text-gray-600">({vocab.hiragana})</span>
-                            <button className="text-gray-400 hover:text-[#765534]">
+                            <button
+                              onClick={() => speakWord(vocab.japanese)}
+                              className="text-gray-400 hover:text-[#765534] transition-colors"
+                            >
                               <Headphones size={20} />
                             </button>
                           </div>
@@ -88,11 +82,20 @@ export default function FavoritesPage() {
                             {vocab.category}
                           </div>
                         </div>
-                        <div className="flex flex-col space-y-2">
-                          <button className="text-yellow-500 hover:text-yellow-600">
+                        <div className="flex flex-col space-y-2 ml-3">
+                          {/* Star is always filled/active here (it's the favorites page) */}
+                          <button
+                            onClick={() => removeVocab(vocab.id)}
+                            className="text-yellow-500 hover:text-yellow-600 transition-colors"
+                            title="Bỏ yêu thích"
+                          >
                             <Star size={24} fill="currentColor" />
                           </button>
-                          <button className="text-red-500 hover:text-red-600">
+                          <button
+                            onClick={() => removeVocab(vocab.id)}
+                            className="text-red-400 hover:text-red-600 transition-colors"
+                            title="Xóa"
+                          >
                             <Trash2 size={20} />
                           </button>
                         </div>
@@ -104,24 +107,19 @@ export default function FavoritesPage() {
             ) : (
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <div className="text-6xl mb-4">⭐</div>
-                <h3 className="text-2xl font-bold text-[#765534] mb-4">
-                  Chưa Có Từ Yêu Thích
-                </h3>
+                <h3 className="text-2xl font-bold text-[#765534] mb-4">Chưa Có Từ Yêu Thích</h3>
                 <p className="text-gray-600 mb-6">
-                  Hãy bắt đầu thêm các từ vựng quan trọng vào danh sách yêu thích
+                  Hãy bấm ⭐ trên bất kỳ từ vựng nào trong trang Minna để thêm vào đây
                 </p>
-                <button className="bg-[#FEC900] text-[#765534] px-8 py-3 rounded-full font-semibold hover:bg-[#FEE173] transition-colors">
-                  Khám Phá Từ Vựng
-                </button>
               </div>
             )}
           </div>
         )}
 
-        {/* Kanji Tab */}
+        {/* ── Kanji Tab ── */}
         {activeTab === 'kanji' && (
           <div className="space-y-6">
-            {favoriteKanji.length > 0 ? (
+            {favKanji.length > 0 ? (
               <>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-[#765534]">Danh Sách Kanji</h2>
@@ -131,9 +129,9 @@ export default function FavoritesPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {favoriteKanji.map((item, index) => (
+                  {favKanji.map((item) => (
                     <div
-                      key={index}
+                      key={item.id}
                       className="bg-gradient-to-br from-[#FEE173] to-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all"
                     >
                       <div className="flex items-start justify-between mb-4">
@@ -141,19 +139,26 @@ export default function FavoritesPage() {
                           <span className="text-5xl text-[#765534]">{item.kanji}</span>
                         </div>
                         <div className="flex flex-col space-y-2">
-                          <button className="text-yellow-500 hover:text-yellow-600">
+                          <button
+                            onClick={() => removeKanji(item.id)}
+                            className="text-yellow-500 hover:text-yellow-600 transition-colors"
+                            title="Bỏ yêu thích"
+                          >
                             <Star size={24} fill="currentColor" />
                           </button>
-                          <button className="text-red-500 hover:text-red-600">
+                          <button
+                            onClick={() => removeKanji(item.id)}
+                            className="text-red-400 hover:text-red-600 transition-colors"
+                            title="Xóa"
+                          >
                             <Trash2 size={20} />
                           </button>
                         </div>
                       </div>
-
                       <div className="space-y-2">
                         <div>
                           <span className="text-sm text-gray-600 font-medium">Âm đọc: </span>
-                          <span className="text-gray-800">{item.reading}</span>
+                          <span className="text-gray-800">{item.onyomi}</span>
                         </div>
                         <div>
                           <span className="text-sm text-gray-600 font-medium">Nghĩa: </span>
@@ -171,29 +176,24 @@ export default function FavoritesPage() {
             ) : (
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <div className="text-6xl mb-4">⭐</div>
-                <h3 className="text-2xl font-bold text-[#765534] mb-4">
-                  Chưa Có Kanji Yêu Thích
-                </h3>
+                <h3 className="text-2xl font-bold text-[#765534] mb-4">Chưa Có Kanji Yêu Thích</h3>
                 <p className="text-gray-600 mb-6">
-                  Hãy bắt đầu thêm các chữ Kanji quan trọng vào danh sách yêu thích
+                  Hãy bấm ⭐ trên bất kỳ Kanji nào trong trang Kanji để thêm vào đây
                 </p>
-                <button className="bg-[#FEC900] text-[#765534] px-8 py-3 rounded-full font-semibold hover:bg-[#FEE173] transition-colors">
-                  Khám Phá Kanji
-                </button>
               </div>
             )}
           </div>
         )}
 
         {/* Study Statistics */}
-        {(activeTab === 'vocabulary' && favoriteVocabulary.length > 0) || 
-         (activeTab === 'kanji' && favoriteKanji.length > 0) ? (
+        {((activeTab === 'vocabulary' && favVocab.length > 0) ||
+          (activeTab === 'kanji' && favKanji.length > 0)) && (
           <div className="mt-12 bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-[#765534] mb-6">Thống Kê Học Tập</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-gradient-to-br from-[#FEC900] to-[#FEE173] rounded-xl p-6 text-center">
                 <div className="text-3xl font-bold text-[#765534] mb-2">
-                  {activeTab === 'vocabulary' ? favoriteVocabulary.length : favoriteKanji.length}
+                  {activeTab === 'vocabulary' ? favVocab.length : favKanji.length}
                 </div>
                 <div className="text-gray-700 font-medium">Tổng số mục</div>
               </div>
@@ -202,12 +202,15 @@ export default function FavoritesPage() {
                 <div className="text-gray-700 font-medium">Đã thuộc</div>
               </div>
               <div className="bg-gradient-to-br from-[#FEC900] to-[#FEE173] rounded-xl p-6 text-center">
-                <div className="text-3xl font-bold text-[#765534] mb-2">5</div>
+                <div className="text-3xl font-bold text-[#765534] mb-2">
+                  {Math.ceil((activeTab === 'vocabulary' ? favVocab.length : favKanji.length) * 0.25)}
+                </div>
                 <div className="text-gray-700 font-medium">Cần ôn lại</div>
               </div>
             </div>
           </div>
-        ) : null}
+        )}
+
       </div>
     </div>
   )

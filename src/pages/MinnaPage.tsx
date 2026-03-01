@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import {BookOpen, FileText, CheckCircle, Brain, Shuffle, CreditCard, Headphones, Star, Volume2} from 'lucide-react'
+import { BookOpen, FileText, CheckCircle, Brain, Shuffle, CreditCard, Star, Volume2 } from 'lucide-react'
 import VocabQuizMode from '@/components/minna/VocabQuizMode'
 import VocabMatchMode from '@/components/minna/VocabMatchMode'
 import VocabFlashcardMode from '@/components/minna/VocabFlashcardMode'
 import RenshuuMode from '@/components/minna/RenshuuMode'
+import { useFavorites } from '@/hooks/useFavorites'
+import type { FavoriteVocab } from '@/hooks/useFavorites'
 
-// Fixed lesson data với dữ liệu thật
+// Fixed lesson data với dữ liệu thật (giữ nguyên 100% từ bản gốc)
 const LESSONS_DATA = [
   {
     id: 1,
@@ -34,24 +36,24 @@ const LESSONS_DATA = [
       { japanese: 'じん', hiragana: 'じん', kanji: '人', meaning: 'người (quốc tịch)', romaji: 'jin' }
     ],
     grammar: [
-      { 
-        pattern: 'N は N です', 
-        meaning: 'N là N', 
-        example: '私は学生です。', 
+      {
+        pattern: 'N は N です',
+        meaning: 'N là N',
+        example: '私は学生です。',
         exampleMeaning: 'Tôi là sinh viên.',
         explanation: 'Dùng để giới thiệu bản thân hoặc người khác. は là trợ từ chỉ chủ đề.'
       },
-      { 
-        pattern: 'N は N じゃありません', 
-        meaning: 'N không phải là N', 
-        example: '私は先生じゃありません。', 
+      {
+        pattern: 'N は N じゃありません',
+        meaning: 'N không phải là N',
+        example: '私は先生じゃありません。',
         exampleMeaning: 'Tôi không phải là giáo viên.',
         explanation: 'Dạng phủ định của câu khẳng định. じゃありません có thể thay bằng ではありません (trang trọng hơn).'
       },
-      { 
-        pattern: 'N は N ですか', 
-        meaning: 'N có phải là N không?', 
-        example: 'あなたは学生ですか。', 
+      {
+        pattern: 'N は N ですか',
+        meaning: 'N có phải là N không?',
+        example: 'あなたは学生ですか。',
         exampleMeaning: 'Bạn có phải là sinh viên không?',
         explanation: 'Câu hỏi yes/no. Thêm か vào cuối câu để tạo câu hỏi.'
       }
@@ -88,31 +90,31 @@ const LESSONS_DATA = [
       { japanese: 'なん', hiragana: 'なん', kanji: '何', meaning: 'cái gì', romaji: 'nan' }
     ],
     grammar: [
-      { 
-        pattern: 'これ/それ/あれ は N です', 
-        meaning: 'Đây/Đó/Kia là N', 
-        example: 'これは本です。', 
+      {
+        pattern: 'これ/それ/あれ は N です',
+        meaning: 'Đây/Đó/Kia là N',
+        example: 'これは本です。',
         exampleMeaning: 'Đây là sách.',
         explanation: 'これ (gần người nói), それ (gần người nghe), あれ (xa cả hai)'
       },
-      { 
-        pattern: 'この/その/あの N は N です', 
-        meaning: 'Cái N này/đó/kia là N', 
-        example: 'この本は私のです。', 
+      {
+        pattern: 'この/その/あの N は N です',
+        meaning: 'Cái N này/đó/kia là N',
+        example: 'この本は私のです。',
         exampleMeaning: 'Cuốn sách này là của tôi.',
         explanation: 'この/その/あの phải đi kèm với danh từ'
       },
-      { 
-        pattern: 'N の N', 
-        meaning: 'N của N', 
-        example: '私の本', 
+      {
+        pattern: 'N の N',
+        meaning: 'N của N',
+        example: '私の本',
         exampleMeaning: 'sách của tôi',
         explanation: 'の chỉ quan hệ sở hữu'
       },
-      { 
-        pattern: 'これは N ですか、N ですか', 
-        meaning: 'Đây là N hay N?', 
-        example: 'これは辞書ですか、本ですか。', 
+      {
+        pattern: 'これは N ですか、N ですか',
+        meaning: 'Đây là N hay N?',
+        example: 'これは辞書ですか、本ですか。',
         exampleMeaning: 'Đây là từ điển hay sách?',
         explanation: 'Câu hỏi lựa chọn'
       }
@@ -147,31 +149,31 @@ const LESSONS_DATA = [
       { japanese: 'せん', hiragana: 'せん', kanji: '千', meaning: 'nghìn', romaji: 'sen' }
     ],
     grammar: [
-      { 
-        pattern: 'ここ/そこ/あそこ は N です', 
-        meaning: 'Đây/Đó/Kia là N', 
-        example: 'ここは教室です。', 
+      {
+        pattern: 'ここ/そこ/あそこ は N です',
+        meaning: 'Đây/Đó/Kia là N',
+        example: 'ここは教室です。',
         exampleMeaning: 'Đây là phòng học.',
         explanation: 'Chỉ địa điểm'
       },
-      { 
-        pattern: 'N は ここ/そこ/あそこ です', 
-        meaning: 'N ở đây/đó/kia', 
-        example: '図書館はあそこです。', 
+      {
+        pattern: 'N は ここ/そこ/あそこ です',
+        meaning: 'N ở đây/đó/kia',
+        example: '図書館はあそこです。',
         exampleMeaning: 'Thư viện ở kia.',
         explanation: 'Chỉ vị trí của địa điểm'
       },
-      { 
-        pattern: 'N はいくらですか', 
-        meaning: 'N giá bao nhiêu?', 
-        example: 'この本はいくらですか。', 
+      {
+        pattern: 'N はいくらですか',
+        meaning: 'N giá bao nhiêu?',
+        example: 'この本はいくらですか。',
         exampleMeaning: 'Cuốn sách này giá bao nhiêu?',
         explanation: 'Hỏi giá cả'
       },
-      { 
-        pattern: 'どこの N ですか', 
-        meaning: 'N của đâu?', 
-        example: 'どこの会社ですか。', 
+      {
+        pattern: 'どこの N ですか',
+        meaning: 'N của đâu?',
+        example: 'どこの会社ですか。',
         exampleMeaning: 'Công ty nào?',
         explanation: 'Hỏi xuất xứ'
       }
@@ -205,38 +207,38 @@ const LESSONS_DATA = [
       { japanese: 'まいばん', hiragana: 'まいばん', kanji: '毎晩', meaning: 'mỗi tối', romaji: 'maiban' }
     ],
     grammar: [
-      { 
-        pattern: 'V ます', 
-        meaning: 'Động từ dạng lịch sự', 
-        example: '私は働きます。', 
+      {
+        pattern: 'V ます',
+        meaning: 'Động từ dạng lịch sự',
+        example: '私は働きます。',
         exampleMeaning: 'Tôi làm việc.',
         explanation: 'Dạng hiện tại, lịch sự của động từ'
       },
-      { 
-        pattern: 'N は V ます', 
-        meaning: 'N làm V', 
-        example: '私は勉強します。', 
+      {
+        pattern: 'N は V ます',
+        meaning: 'N làm V',
+        example: '私は勉強します。',
         exampleMeaning: 'Tôi học.',
         explanation: 'Câu với động từ'
       },
-      { 
-        pattern: '時間 に V ます', 
-        meaning: 'Làm V vào lúc (thời gian)', 
-        example: '7時に起きます。', 
+      {
+        pattern: '時間 に V ます',
+        meaning: 'Làm V vào lúc (thời gian)',
+        example: '7時に起きます。',
         exampleMeaning: 'Tôi thức dậy lúc 7 giờ.',
         explanation: 'に chỉ thời gian cụ thể'
       },
-      { 
-        pattern: '時間から 時間まで V ます', 
-        meaning: 'Từ (giờ) đến (giờ) làm V', 
-        example: '9時から5時まで働きます。', 
+      {
+        pattern: '時間から 時間まで V ます',
+        meaning: 'Từ (giờ) đến (giờ) làm V',
+        example: '9時から5時まで働きます。',
         exampleMeaning: 'Tôi làm việc từ 9 giờ đến 5 giờ.',
         explanation: 'から (từ), まで (đến)'
       },
-      { 
-        pattern: '何時に V ますか', 
-        meaning: 'Mấy giờ làm V?', 
-        example: '何時に寝ますか。', 
+      {
+        pattern: '何時に V ますか',
+        meaning: 'Mấy giờ làm V?',
+        example: '何時に寝ますか。',
         exampleMeaning: 'Mấy giờ bạn ngủ?',
         explanation: 'Câu hỏi về thời gian'
       }
@@ -272,38 +274,38 @@ const LESSONS_DATA = [
       { japanese: 'あした', hiragana: 'あした', kanji: '明日', meaning: 'ngày mai', romaji: 'ashita' }
     ],
     grammar: [
-      { 
-        pattern: 'N へ 行きます/来ます/帰ります', 
-        meaning: 'Đi/đến/về N', 
-        example: '学校へ行きます。', 
+      {
+        pattern: 'N へ 行きます/来ます/帰ります',
+        meaning: 'Đi/đến/về N',
+        example: '学校へ行きます。',
         exampleMeaning: 'Tôi đi đến trường.',
         explanation: 'へ chỉ hướng đi'
       },
-      { 
-        pattern: 'N で 行きます/来ます/帰ります', 
-        meaning: 'Đi/đến/về bằng N', 
-        example: '電車で行きます。', 
+      {
+        pattern: 'N で 行きます/来ます/帰ります',
+        meaning: 'Đi/đến/về bằng N',
+        example: '電車で行きます。',
         exampleMeaning: 'Tôi đi bằng tàu điện.',
         explanation: 'で chỉ phương tiện'
       },
-      { 
-        pattern: 'N と 行きます/来ます/帰ります', 
-        meaning: 'Đi/đến/về cùng N', 
-        example: '友達と行きます。', 
+      {
+        pattern: 'N と 行きます/来ます/帰ります',
+        meaning: 'Đi/đến/về cùng N',
+        example: '友達と行きます。',
         exampleMeaning: 'Tôi đi cùng bạn.',
         explanation: 'と chỉ đồng hành'
       },
-      { 
-        pattern: 'いつ V ますか', 
-        meaning: 'Khi nào V?', 
-        example: 'いつ日本へ行きますか。', 
+      {
+        pattern: 'いつ V ますか',
+        meaning: 'Khi nào V?',
+        example: 'いつ日本へ行きますか。',
         exampleMeaning: 'Khi nào bạn đi Nhật?',
         explanation: 'Hỏi thời gian (không cụ thể)'
       },
-      { 
-        pattern: 'どこへも 行きません', 
-        meaning: 'Không đi đâu cả', 
-        example: 'どこへも行きません。', 
+      {
+        pattern: 'どこへも 行きません',
+        meaning: 'Không đi đâu cả',
+        example: 'どこへも行きません。',
         exampleMeaning: 'Tôi không đi đâu cả.',
         explanation: 'Dạng phủ định toàn bộ'
       }
@@ -313,50 +315,49 @@ const LESSONS_DATA = [
 
 export default function MinnaPage() {
   const [selectedLesson, setSelectedLesson] = useState<number | null>(null)
-  const [activeSection, setActiveSection] = useState<'vocabulary' | 'grammar' | 'renshuu'>('vocabulary')
-  const [activeMode, setActiveMode] = useState<string | null>(null)
+  const [activeSection, setActiveSection]   = useState<'vocabulary' | 'grammar' | 'renshuu'>('vocabulary')
+  const [activeMode, setActiveMode]         = useState<string | null>(null)
 
+  const { isVocabFav, toggleVocab } = useFavorites()
   const currentLesson = LESSONS_DATA.find(l => l.id === selectedLesson)
 
   const learningModes = [
-    { id: 'quiz', icon: Brain, title: 'Trắc Nghiệm', desc: '4 đáp án' },
-    { id: 'match', icon: Shuffle, title: 'Ghép Từ', desc: 'Kết nối từ' },
-    { id: 'flashcard', icon: CreditCard, title: 'Flashcard', desc: 'Học và nhớ' }
+    { id: 'quiz',      icon: Brain,     title: 'Trắc Nghiệm', desc: '4 đáp án' },
+    { id: 'match',     icon: Shuffle,   title: 'Ghép Từ',     desc: 'Kết nối từ' },
+    { id: 'flashcard', icon: CreditCard,title: 'Flashcard',   desc: 'Học và nhớ' },
   ]
 
   const speakWord = (text: string) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
-      const utterance = new SpeechSynthesisUtterance(text)
-      utterance.lang = 'ja-JP'
-      utterance.rate = 0.8
-      window.speechSynthesis.speak(utterance)
+      const u = new SpeechSynthesisUtterance(text)
+      u.lang = 'ja-JP'; u.rate = 0.8
+      window.speechSynthesis.speak(u)
     }
   }
 
-  if (activeMode === 'quiz' && currentLesson) {
-    return <VocabQuizMode vocabulary={currentLesson.vocabulary} onBack={() => setActiveMode(null)} lessonTitle={currentLesson.title} />
-  }
+  // Build a FavoriteVocab object from a lesson vocab entry
+  const toFav = (vocab: typeof LESSONS_DATA[0]['vocabulary'][0], lessonTitle: string): FavoriteVocab => ({
+    id: `minna_${lessonTitle}_${vocab.japanese}`,
+    japanese: vocab.japanese,
+    hiragana: vocab.hiragana,
+    kanji: vocab.kanji,
+    meaning: vocab.meaning,
+    romaji: vocab.romaji,
+    category: `Minna ${lessonTitle}`,
+  })
 
-  if (activeMode === 'match' && currentLesson) {
-    return <VocabMatchMode vocabulary={currentLesson.vocabulary} onBack={() => setActiveMode(null)} lessonTitle={currentLesson.title} />
-  }
-
-  if (activeMode === 'flashcard' && currentLesson) {
-    return <VocabFlashcardMode vocabulary={currentLesson.vocabulary} onBack={() => setActiveMode(null)} lessonTitle={currentLesson.title} />
-  }
+  if (activeMode === 'quiz'      && currentLesson) return <VocabQuizMode      vocabulary={currentLesson.vocabulary} onBack={() => setActiveMode(null)} lessonTitle={currentLesson.title} />
+  if (activeMode === 'match'     && currentLesson) return <VocabMatchMode     vocabulary={currentLesson.vocabulary} onBack={() => setActiveMode(null)} lessonTitle={currentLesson.title} />
+  if (activeMode === 'flashcard' && currentLesson) return <VocabFlashcardMode vocabulary={currentLesson.vocabulary} onBack={() => setActiveMode(null)} lessonTitle={currentLesson.title} />
 
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#765534] mb-4">
-            Minna No Nihongo
-          </h1>
-          <p className="text-lg text-gray-600">
-            Học từ vựng và ngữ pháp qua 5 bài học cơ bản
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#765534] mb-4">Minna No Nihongo</h1>
+          <p className="text-lg text-gray-600">Học từ vựng và ngữ pháp qua 5 bài học cơ bản</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -366,23 +367,16 @@ export default function MinnaPage() {
               <h2 className="text-xl font-bold text-[#765534] mb-4">Danh Sách Bài Học</h2>
               <div className="space-y-2 max-h-[600px] overflow-y-auto">
                 {LESSONS_DATA.map((lesson) => (
-                  <button
-                    key={lesson.id}
-                    onClick={() => setSelectedLesson(lesson.id)}
+                  <button key={lesson.id} onClick={() => setSelectedLesson(lesson.id)}
                     className={`w-full text-left p-4 rounded-xl transition-all ${
-                      selectedLesson === lesson.id
-                        ? 'bg-[#FEC900] text-[#765534] shadow-md'
-                        : 'bg-gray-50 hover:bg-[#FEE173] text-gray-700'
-                    }`}
-                  >
+                      selectedLesson === lesson.id ? 'bg-[#FEC900] text-[#765534] shadow-md' : 'bg-gray-50 hover:bg-[#FEE173] text-gray-700'
+                    }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         {lesson.completed && <CheckCircle size={20} className="text-green-600" />}
                         <span className="font-semibold">{lesson.title}</span>
                       </div>
-                      <div className="text-xs text-gray-600">
-                        {lesson.vocabularyCount} từ
-                      </div>
+                      <div className="text-xs text-gray-600">{lesson.vocabularyCount} từ</div>
                     </div>
                   </button>
                 ))}
@@ -397,51 +391,26 @@ export default function MinnaPage() {
                 {/* Section Tabs */}
                 <div className="bg-white rounded-2xl shadow-lg p-2">
                   <div className="flex space-x-2">
-                    <button
-                      onClick={() => setActiveSection('vocabulary')}
-                      className={`flex-1 py-3 rounded-xl font-semibold transition-colors ${
-                        activeSection === 'vocabulary'
-                          ? 'bg-[#FEC900] text-[#765534]'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      Từ Vựng
-                    </button>
-                    <button
-                      onClick={() => setActiveSection('grammar')}
-                      className={`flex-1 py-3 rounded-xl font-semibold transition-colors ${
-                        activeSection === 'grammar'
-                          ? 'bg-[#FEC900] text-[#765534]'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      Ngữ Pháp
-                    </button>
-                    <button
-                      onClick={() => setActiveSection('renshuu')}
-                      className={`flex-1 py-3 rounded-xl font-semibold transition-colors ${
-                        activeSection === 'renshuu'
-                          ? 'bg-[#FEC900] text-[#765534]'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      Renshuu (練習)
-                    </button>
+                    {(['vocabulary','grammar','renshuu'] as const).map(sec => (
+                      <button key={sec} onClick={() => setActiveSection(sec)}
+                        className={`flex-1 py-3 rounded-xl font-semibold transition-colors ${
+                          activeSection === sec ? 'bg-[#FEC900] text-[#765534]' : 'text-gray-600 hover:bg-gray-100'
+                        }`}>
+                        {sec === 'vocabulary' ? 'Từ Vựng' : sec === 'grammar' ? 'Ngữ Pháp' : 'Renshuu (練習)'}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Learning Modes */}
+                {/* Learning Modes + Vocab List */}
                 {activeSection === 'vocabulary' && (
                   <>
                     <div className="grid grid-cols-3 gap-4">
                       {learningModes.map((mode) => {
                         const Icon = mode.icon
                         return (
-                          <button
-                            key={mode.id}
-                            onClick={() => setActiveMode(mode.id)}
-                            className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all hover:scale-105"
-                          >
+                          <button key={mode.id} onClick={() => setActiveMode(mode.id)}
+                            className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all hover:scale-105 text-center">
                             <div className="bg-[#FEE173] w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <Icon size={24} className="text-[#765534]" />
                             </div>
@@ -452,44 +421,49 @@ export default function MinnaPage() {
                       })}
                     </div>
 
-                    {/* Vocabulary List */}
                     <div className="bg-white rounded-2xl shadow-lg p-6">
                       <h3 className="text-xl font-bold text-[#765534] mb-6">
                         Danh Sách Từ Vựng ({currentLesson.vocabulary.length} từ)
                       </h3>
                       <div className="space-y-4">
-                        {currentLesson.vocabulary.map((vocab, index) => (
-                          <div key={index} className="p-4 bg-gray-50 rounded-xl hover:bg-[#FEE173] transition-colors cursor-pointer group">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-3 mb-2">
-                                  <span className="text-2xl font-bold text-[#765534]">{vocab.kanji}</span>
-                                  <span className="text-gray-600">({vocab.hiragana})</span>
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      speakWord(vocab.japanese)
-                                    }}
-                                    className="text-gray-400 hover:text-[#765534] transition-colors"
-                                  >
-                                    <Volume2 size={20} />
-                                  </button>
-                                  <button className="opacity-0 group-hover:opacity-100 transition-opacity text-[#FEC900] hover:text-[#765534]">
-                                    <Star size={20} />
-                                  </button>
+                        {currentLesson.vocabulary.map((vocab, index) => {
+                          const favObj = toFav(vocab, currentLesson.title)
+                          const faved  = isVocabFav(favObj.id)
+                          return (
+                            <div key={index} className="p-4 bg-gray-50 rounded-xl hover:bg-[#FEE173] transition-colors group">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3 mb-2">
+                                    <span className="text-2xl font-bold text-[#765534]">{vocab.kanji}</span>
+                                    <span className="text-gray-600">({vocab.hiragana})</span>
+                                    <button onClick={(e) => { e.stopPropagation(); speakWord(vocab.japanese) }}
+                                      className="text-gray-400 hover:text-[#765534] transition-colors">
+                                      <Volume2 size={20} />
+                                    </button>
+                                  </div>
+                                  <div className="text-sm text-gray-500 mb-1">Romaji: {vocab.romaji}</div>
+                                  <div className="text-lg text-gray-700">Nghĩa: {vocab.meaning}</div>
                                 </div>
-                                <div className="text-sm text-gray-500 mb-1">Romaji: {vocab.romaji}</div>
-                                <div className="text-lg text-gray-700">Nghĩa: {vocab.meaning}</div>
+                                {/* ⭐ Star button — always visible, filled when faved */}
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); toggleVocab(favObj) }}
+                                  className={`ml-3 transition-all hover:scale-110 ${
+                                    faved ? 'text-yellow-500' : 'text-gray-300 group-hover:text-yellow-400'
+                                  }`}
+                                  title={faved ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
+                                >
+                                  <Star size={22} fill={faved ? 'currentColor' : 'none'} />
+                                </button>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     </div>
                   </>
                 )}
 
-                {/* Grammar Section */}
+                {/* Grammar */}
                 {activeSection === 'grammar' && (
                   <div className="bg-white rounded-2xl shadow-lg p-6">
                     <h3 className="text-xl font-bold text-[#765534] mb-6">
@@ -509,16 +483,14 @@ export default function MinnaPage() {
                             <div className="text-lg text-[#765534] mb-2 font-medium">{grammar.example}</div>
                             <div className="text-gray-600">{grammar.exampleMeaning}</div>
                           </div>
-                          <div className="text-sm text-gray-500 italic">
-                            💡 {grammar.explanation}
-                          </div>
+                          <div className="text-sm text-gray-500 italic">💡 {grammar.explanation}</div>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Renshuu Section */}
+                {/* Renshuu */}
                 {activeSection === 'renshuu' && (
                   <RenshuuMode lessonId={currentLesson.id} lessonTitle={currentLesson.title} />
                 )}
@@ -526,12 +498,8 @@ export default function MinnaPage() {
             ) : (
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <div className="text-6xl mb-4">📚</div>
-                <h3 className="text-2xl font-bold text-[#765534] mb-4">
-                  Chọn Bài Học
-                </h3>
-                <p className="text-gray-600">
-                  Hãy chọn một bài học từ danh sách bên trái để bắt đầu
-                </p>
+                <h3 className="text-2xl font-bold text-[#765534] mb-4">Chọn Bài Học</h3>
+                <p className="text-gray-600">Hãy chọn một bài học từ danh sách bên trái để bắt đầu</p>
               </div>
             )}
           </div>
